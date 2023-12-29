@@ -1,0 +1,8 @@
+pymysql
+pytest~=7.4.3
+pytest-bdd~=7.0.1
+pytest-html
+requests
+selenium~=4.16.0
+behave~=1.2.6
+allure-behave
