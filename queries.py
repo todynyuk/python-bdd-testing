@@ -1,5 +1,7 @@
 from utils.database_methods import get_data_from_database_by_query
 from utils import string_utils
+import psycopg2
+from config import host, user, password, db_name
 
 
 def get_login_by_id(user_id):
@@ -28,5 +30,28 @@ def get_zip_code_by_login(login):
 
 
 def get_item_name_by_user_id(user_id):
-    query = f"""SELECT product_name FROM public.users_orders WHERE user_id = {user_id}"""
-    return string_utils.del_brackets_and_quotes_from_str(get_data_from_database_by_query(query))
+    user_data = ''
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=db_name
+        )
+        connection.autocommit = True
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""SELECT product_name FROM public.users_orders WHERE user_id = {user_id}"""
+            )
+            user_data = cursor.fetchall()
+    except Exception as _ex:
+        print("[INFO] Error while working with PostgreSQL", _ex)
+    finally:
+        if connection:
+            connection.close()
+            print("[INFO] PostgreSQL connection closed")
+    buffer_list = []
+    for item in user_data:
+        buffer_list.append(string_utils.del_brackets_and_quotes_from_str(item))
+    return buffer_list

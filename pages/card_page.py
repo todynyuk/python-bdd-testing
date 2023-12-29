@@ -14,6 +14,10 @@ class CartPage(BasePage):
         item_description_text = context.driver.find_element(By.XPATH, "//div[@class='inventory_item_name']").text
         return product_name == item_description_text
 
+    def validate_products_list_in_cart(self, context):
+        items_description_list = len(context.driver.find_elements(By.XPATH, "//div[@class='inventory_item_name']"))
+        return items_description_list > 1
+
     def continue_to_checkout(self, context):
         context.driver.find_element(By.XPATH, "//button[@data-test='checkout']").click()
         time.sleep(3)

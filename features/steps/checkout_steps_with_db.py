@@ -9,9 +9,6 @@ from pages.order_completion import OrderCompletion
 from pages.product_page import ProductPage
 import queries
 
-username = queries.get_login_by_id(1)
-password = queries.get_password_by_login(username)
-
 
 @given(u'User launch browser')
 def step_impl(context):
@@ -30,33 +27,31 @@ def step_impl(context):
         print(u'STEP: When open login page: Could not navigate to login page')
 
 
-@when(u'User enters username and password')
-def step_impl(context):
+@when(u'User "{user_login}" enters username and password')
+def step_impl(context, user_login):
     login = LoginPage(context)
     time.sleep(3)
-    global username
-    global password
     assert login.check_is_username_input_field_present(context), "Username input field is not presented"
     assert login.check_is_password_input_field_present(context), "Password input field is not presented"
     assert login.check_is_login_button_present(context), "Sign in button is not presented"
-    login.set_valid_username(context, username)
-    login.set_valid_password(context, password)
+    login.set_valid_username(context, user_login)
+    login.set_valid_password(context, queries.get_password_by_login(user_login))
     login.click_sign_in_button(context)
 
 
-@then(u'User add product to cart')
-def step_impl(context):
+@then(u'User add product to cart "{order_id}"')
+def step_impl(context, order_id):
     product_page = ProductPage(context)
-    item = queries.get_item_name_by_user_id(1)
-    product_page.add_product_to_cart(context, item)
+    items_list = queries.get_item_name_by_user_id(order_id)
+    for value in items_list:
+        product_page.add_product_to_cart(context, value)
     product_page.open_shopping_cart(context)
 
 
-@then(u'Product title must be present in cart orders')
+@then(u'Products list must be more than 1 in cart orders')
 def step_impl(context):
     card_page = CartPage(context)
-    item = queries.get_item_name_by_user_id(1)
-    assert card_page.validate_product_in_cart(context, item), "Item names are not equals"
+    assert card_page.validate_products_list_in_cart(context), "Items less or equal 1"
 
 
 @when(u'User click checkout button')
@@ -73,12 +68,12 @@ def step_impl(context):
     assert checkout.check_is_zip_code_input_field_present(context), "Input field Postal code is not presented"
 
 
-@when(u'User fill all fields and press confirm order')
-def step_impl(context):
+@when(u'User "{user_login}" fill all fields and press confirm order')
+def step_impl(context, user_login):
     checkout = CheckoutPage(context)
-    f_name = queries.get_first_name_by_login(username)
-    l_name = queries.get_last_name_by_login(username)
-    zip_code = queries.get_zip_code_by_login(username)
+    f_name = queries.get_first_name_by_login(user_login)
+    l_name = queries.get_last_name_by_login(user_login)
+    zip_code = queries.get_zip_code_by_login(user_login)
     checkout.set_firstname(context, f_name)
     checkout.set_lastname(context, l_name)
     checkout.set_zipcode(context, zip_code)
